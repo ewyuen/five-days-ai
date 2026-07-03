@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+.docusaurus/
+.cache/
+
+# Databases & Data
+chroma_db/
+**/chroma_db/
+*.db
+*.sqlite
+
+# Secrets & Environment Variables
+.env
+.env.*
+!.env.example
+
+# Editor & System Files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Temporary CLI files
+.claude/
+.gemini/
