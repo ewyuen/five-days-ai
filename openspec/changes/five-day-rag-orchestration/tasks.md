@@ -28,16 +28,9 @@
 - [x] 4.2 Build `/api/chat` route using Vercel AI SDK to stream OpenAI, Anthropic, or Google Gemini responses.
 - [x] 4.3 Implement `local-rag` intercept routing to forward requests to the FastAPI RAG server.
 - [x] 4.4 [Human Verification] Test the model selector, settings modal, and Local RAG routing in the browser UI.
+## 5. Day 5 - Final Verification & Kaggle Package Prep
 
-## 5. Day 5 - Multi-Agent Orchestrator Client
-
-- [ ] 5.1 Build programmatic multi-agent execution client (Orchestrator calling Planner to generate phases, then executing Coder/Designer tasks).
-- [ ] 5.2 Implement real-time agent execution timeline UI showing spinner states, code output blocks, and styled previews.
-- [ ] 5.3 [Human Verification] Test the Planner, Coder, and Designer orchestration execution loop in the browser UI.
-
-## 6. Wrapup - Final Verification & Kaggle Package Prep
-
-- [ ] 6.1 Run full integration tests connecting Next.js interface to the Python RAG backend.
-- [ ] 6.2 Build RAG evaluation verification script checking retrieval precision and correctness.
-- [ ] 6.3 Draft Kaggle Capstone Project Writeup.md summarizing system design, outcomes, and setup commands.
-- [ ] 6.4 [Human Verification] Conduct final end-to-end user testing of the integrated system and approve the Kaggle submission materials.
+- [ ] 5.1 Run full integration tests connecting Next.js interface to the Python RAG backend.
+- [ ] 5.2 Build RAG evaluation verification script checking retrieval precision and correctness.
+- [ ] 5.3 Draft Kaggle Capstone Project Writeup.md summarizing system design, outcomes, and setup commands.
+- [ ] 5.4 [Human Verification] Conduct final end-to-end user testing of the integrated system and approve the Kaggle submission materials.
