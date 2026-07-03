@@ -4,7 +4,7 @@
 TBD - created by archiving change five-day-rag-orchestration. Update Purpose after archive.
 ## Requirements
 ### Requirement: Model selector and client keys
-The Next.js application SHALL provide a model selector dropdown (supporting OpenAI, Anthropic, and Google Gemini models) and a Settings UI to manage API keys, storing credentials securely in browser local storage.
+The Next.js application (generic-ai-client) SHALL provide a model selector dropdown (supporting OpenAI, Anthropic, and Google Gemini models) and a Settings UI to manage API keys, storing credentials securely in browser local storage.
 
 #### Scenario: Selecting a model provider
 - **WHEN** the user selects a model from the selector dropdown
