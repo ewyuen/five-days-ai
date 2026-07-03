@@ -27,7 +27,7 @@
 - [x] 4.1 Initialize the Next.js frontend project under `multi-agent-ui/` with Tailwind CSS v4 styling and Lucide icons.
 - [x] 4.2 Build `/api/chat` route using Vercel AI SDK to stream OpenAI, Anthropic, or Google Gemini responses.
 - [x] 4.3 Implement `local-rag` intercept routing to forward requests to the FastAPI RAG server.
-- [ ] 4.4 [Human Verification] Test the model selector, settings modal, and Local RAG routing in the browser UI.
+- [x] 4.4 [Human Verification] Test the model selector, settings modal, and Local RAG routing in the browser UI.
 
 ## 5. Day 5 - Multi-Agent Orchestrator Client
 
