@@ -54,6 +54,10 @@ The workspace is split into two unified components: a Python FastAPI RAG backend
 *   Includes a credentials settings drawer to let users securely save API keys on the client-side.
 *   Automatically detects when a user selects "Local RAG" and routes requests through a custom proxy API, rendering document source reference badges alongside answer text.
 
+### 5. Spec-Driven Development (OpenSpec)
+*   The entire development lifecycle of this project (timeline milestones, functional requirements, technical design docs, and implementation checklists) was strictly managed using **OpenSpec**.
+*   The specification contracts resided inside `openspec/`, and all daily features were proposed, validated, and archived using spec-driven changes. This demonstrates a rigorous, model-verifiable engineering workflow.
+
 ---
 
 ## 3. Verification & Evaluation Results
@@ -127,9 +131,4 @@ uv run phase-1/evaluate_rag.py
 The current codebase delivers the core foundation for **Phase 1** (persistent local RAG retrieval, OpenAI/Gemini/Anthropic client routing, and single-agent ReAct telemetry loops). 
 
 To scale this workspace for advanced development tasks, the proposed **Phase 2** roadmap outlines the implementation of a **Multi-Agent Orchestration Engine**:
-
-1. **Planner Agent**: A specialist agent that accepts high-level prompts, designs a structured development plan, and breaks it down into sequential or parallel sub-phases.
-2. **Coder & Designer Agents**: Execution sub-agents that receive scoped tasks from the Planner, write code, create mockups, and run validation tests.
-3. **Execution Timeline UI**: A live frontend dashboard that visualizes the orchestrator's thoughts, showing spinner states for active agents, real-time code output blocks, and rendered visual previews.
-4. **OTLP Collector Integration**: Forwarding standard OpenTelemetry spans from the agent loops to external visualization dashboards (such as Arize Phoenix or Jaeger) for system-wide tracing.
 
