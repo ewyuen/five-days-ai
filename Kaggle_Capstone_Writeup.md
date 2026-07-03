@@ -119,3 +119,17 @@ uv run phase-1/evaluate_rag.py
     npm run dev
     ```
     Open `http://localhost:3000` in your web browser. Configure your API credentials in Settings, choose the **Local RAG (ag20)** model, and start chatting.
+
+---
+
+## 5. Future Roadmap: Phase 2 Multi-Agent Orchestration
+
+The current codebase delivers the core foundation for **Phase 1** (persistent local RAG retrieval, OpenAI/Gemini/Anthropic client routing, and single-agent ReAct telemetry loops). 
+
+To scale this workspace for advanced development tasks, the proposed **Phase 2** roadmap outlines the implementation of a **Multi-Agent Orchestration Engine**:
+
+1. **Planner Agent**: A specialist agent that accepts high-level prompts, designs a structured development plan, and breaks it down into sequential or parallel sub-phases.
+2. **Coder & Designer Agents**: Execution sub-agents that receive scoped tasks from the Planner, write code, create mockups, and run validation tests.
+3. **Execution Timeline UI**: A live frontend dashboard that visualizes the orchestrator's thoughts, showing spinner states for active agents, real-time code output blocks, and rendered visual previews.
+4. **OTLP Collector Integration**: Forwarding standard OpenTelemetry spans from the agent loops to external visualization dashboards (such as Arize Phoenix or Jaeger) for system-wide tracing.
+
