@@ -49,7 +49,7 @@ The workspace is split into two unified components: a Python FastAPI RAG backend
 *   Includes a safe arithmetic `calculate` calculator tool that parses and evaluates mathematical expressions.
 *   Instrumented with custom **OpenTelemetry tracing** spans (`agent_query`, `agent_step_N`, `llm_call`, `tool_execution`) exported directly to the terminal stdout for debugging.
 
-### 4. Interactive Next.js Chat Client (`multi-agent-ui`)
+### 4. Interactive Next.js Chat Client (`generic-ai-client`)
 *   Features a responsive, high-fidelity sidebar for managing chat conversations and theme switching.
 *   Includes a credentials settings drawer to let users securely save API keys on the client-side.
 *   Automatically detects when a user selects "Local RAG" and routes requests through a custom proxy API, rendering document source reference badges alongside answer text.
@@ -115,7 +115,7 @@ uv run phase-1/evaluate_rag.py
     ```
 2.  **Next.js Frontend Client**:
     ```bash
-    cd multi-agent-ui
+    cd generic-ai-client
     npm run dev
     ```
     Open `http://localhost:3000` in your web browser. Configure your API credentials in Settings, choose the **Local RAG (ag20)** model, and start chatting.

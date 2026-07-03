@@ -136,10 +136,10 @@ Ensure the FastAPI backend is running on port 8000 so the Next.js app can interc
     ```
 
 #### 2. Start the Next.js Development Server
-Start the frontend interface from the `multi-agent-ui/` directory:
+Start the frontend interface from the `generic-ai-client/` directory:
 *   **Run commands**:
     ```bash
-    cd multi-agent-ui
+    cd generic-ai-client
     npm run dev
     ```
 
