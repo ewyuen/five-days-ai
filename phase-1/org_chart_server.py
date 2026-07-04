@@ -220,6 +220,29 @@ def get_manager_chain(name: str) -> str:
     return f"Reporting Line / Manager Chain for {emp['name']}:\n{chain_str}"
 
 
+@mcp.tool()
+def get_subordinates(name: str) -> str:
+    """Get the immediate subordinates (direct reports) for an employee.
+
+    Args:
+        name: Name of the employee.
+    """
+    emp = find_employee_by_name(name)
+    if not emp:
+        return f"Error: Employee '{name}' not found."
+
+    subordinates: List[str] = []
+    for emp_name, data in EMPLOYEES.items():
+        if data["manager"] == emp["name"]:
+            subordinates.append(f"- {data['name']} ({data['role']})")
+
+    if not subordinates:
+        return f"{emp['name']} has no immediate subordinates."
+
+    subordinates_str = "\n".join(subordinates)
+    return f"Immediate subordinates / direct reports of {emp['name']}:\n{subordinates_str}"
+
+
 def validate_hierarchy() -> None:
     """Validate the org chart database against hierarchy rules:
     1. Exactly one CEO (manager = "").
