@@ -150,5 +150,30 @@ Start the frontend interface from the `generic-ai-client/` directory:
 4.  Submit a policy query (e.g., *"How many vacation days do I accrue?"*).
 5.  **Expected Output**: The UI streams the grounded answer from the FastAPI server and displays a structured **Sources** block listing referenced documents (e.g. `vacation_policy.md`) with context previews.
 
+---
+
+### Day 5: AI Agent with RAG & MCP Org Chart Integration
+
+This section introduces an advanced ReAct agent that combines the local RAG database (Chroma) and a Model Context Protocol (MCP) server containing the company's reporting structure to answer complex multi-turn/cross-domain questions.
+
+#### 1. Setup & Run the Agent
+The agent starts an MCP server subprocess (`org_chart_server.py`) and uses stdio transport to query reporting structures, while querying Chroma for policies.
+*   **Run command (from repository root)**:
+    ```bash
+    uv run phase-1/step5.py
+    ```
+
+#### 2. Verification & Expected Output
+The script prints the steps, tool execution results, and OpenTelemetry console trace spans.
+*   **Scenario 1: Vacation query** ("John Doe has how many days of vacation per year?")
+    - The agent calls the MCP tool `get_employee` to check John's employment status (`Full-time`).
+    - The agent calls the RAG tool `search_policies` to search the vacation policy.
+    - Final Answer should specify **22 days**.
+*   **Scenario 2: Purchase approval query** ("Who can approve John Doe to purchase a computer which costs $1500?")
+    - The agent queries `get_employee` and `get_manager_chain` (MCP) to trace John's reporting line (`Marcus Liang -> Priya Rao -> Sarah Jenkins`).
+    - The agent queries `search_policies` (RAG) for equipment approval limits (above $1200 requires VP-level sign-off).
+    - Final Answer should identify **Priya Rao** (VP of Hardware) as the approving VP.
+
+
 
 
