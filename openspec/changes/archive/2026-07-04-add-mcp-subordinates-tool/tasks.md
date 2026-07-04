@@ -5,4 +5,4 @@
 ## 2. Verification
 
 - [x] 2.1 Verify querying subordinates of "Sarah Jenkins" using the ReAct agent returns the list of direct reports.
-- [ x] 2.2 [Human Verification] Verify the response displays correctly in the browser chat bubbles.
+- [x] 2.2 [Human Verification] Verify the response displays correctly in the browser chat bubbles.
