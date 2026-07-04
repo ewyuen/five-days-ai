@@ -141,7 +141,7 @@ uv run phase-1/evaluate_rag.py
     cd generic-ai-client
     npm run dev
     ```
-    Open `http://localhost:3000` in your web browser. Configure your API credentials in Settings, choose the **Local RAG (ag20)** or **Local ReAct Agent (MCP)** model, and start chatting.
+    Open `http://localhost:3000` in your web browser. Configure your API credentials in Settings, choose the **Local RAG** or **Local ReAct Agent (MCP)** model, and start chatting.
 
 ---
 

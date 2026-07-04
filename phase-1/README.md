@@ -146,7 +146,7 @@ Start the frontend interface from the `generic-ai-client/` directory:
 #### 3. Frontend Verification Steps
 1.  Open your browser and navigate to `http://localhost:3000`.
 2.  Open the **Settings Modal** (gear icon in the sidebar or top-right header) and save a valid OpenAI API key.
-3.  Choose the **Local RAG (ag20)** model in the selector dropdown.
+3.  Choose the **Local RAG** model in the selector dropdown.
 4.  Submit a policy query (e.g., *"How many vacation days do I accrue?"*).
 5.  **Expected Output**: The UI streams the grounded answer from the FastAPI server and displays a structured **Sources** block listing referenced documents (e.g. `vacation_policy.md`) with context previews.
 
