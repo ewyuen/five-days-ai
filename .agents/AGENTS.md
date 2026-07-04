@@ -4,7 +4,6 @@
 - **Always run commands from the repository root.** Phase 1 implementation files (`phase-1/app.py`, `phase-1/step3.py`, `phase-1/step4.py`) use relative paths (e.g., `phase-1/ingest_docs/`, `phase-1/chroma_db/`) that will fail if executed from within the `phase-1/` directory.
 
 ## Toolchain & Environment
-- **CLI Proxy:** Use `rtk` as a prefix for all shell commands to minimize token consumption (e.g., `rtk ls`, `rtk uv sync`). It filters and compresses output. Use `rtk proxy <cmd>` to run raw (no filtering) if debugging is needed.
 - **Package Manager:** `uv`
 - **Dependency Sync:** `uv sync` (run in `phase-1/` or root accordingly)
 - **Environment Variables:** Requires `OPENAI_API_KEY` in a `.env` file under `phase-1/`.
