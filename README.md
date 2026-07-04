@@ -12,23 +12,31 @@ The workspace is split into two unified components: a Python FastAPI RAG backend
                   ┌───────────────────────────────────────────────┐
                   │          Next.js App Router Client            │
                   │                 (Port 3000)                   │
-                  └───────────────────────┬───────────────────────┘
-                                          │
-                                          │ HTTP /api/chat Intercept
-                                          ▼
-                  ┌───────────────────────────────────────────────┐
-                  │            FastAPI Backend Service            │
-                  │                 (Port 8000)                   │
-                  ├───────────────────────┬───────────────────────┤
-                  │    Chroma Vector DB   │   OpenAI / Gemini     │
-                  │    (Local Storage)    │   Completion API      │
-                  └───────────────────────┴───────────────────────┘
+                  └───────────────┬───────────────────────┬───────┘
+                                  │                       │
+           HTTP /api/chat Intercept                       │ OpenAI / Gemini /
+                                  ▼                       │ Anthropic APIs
+                  ┌──────────────────────────────┐        │ (External LLMs)
+                  │   FastAPI Backend Service    │        │
+                  │         (Port 8000)          │        │
+                  ├───────────────┬──────────────┤        │
+                  │ Chroma RAG DB │  Local MCP   │        │
+                  │ (Local Store) │ (Org Chart)  │        │
+                  └───────────────┴──────────────┘        ▼
+                                  │                       │
+                                  └───────────┬───────────┘
+                                              ▼
+                                 ┌─────────────────────────┐
+                                 │   LLM APIs (OpenAI,     │
+                                 │   Gemini, Anthropic)    │
+                                 └─────────────────────────┘
 ```
 
 ### Component Details
 *   **Vector Database (Chroma DB)**: A local, persistent database index mapping chunked document embeddings to source files.
-*   **FastAPI API**: Exposes RAG similarity search and grounded LLM completion at `/query`, and system status at `/health`.
-*   **Next.js Client**: A premium dark-mode web application featuring model provider selectors (OpenAI, Anthropic, Gemini, Local RAG), chat history persistence via local storage, and real-time response streaming using the Vercel AI SDK.
+*   **Local MCP Server (`org_chart_server.py`)**: An organization chart server hosting 21 employee profiles in a structured hierarchy (CEO -> VPs -> Managers -> ICs) with tool helper bindings (`get_employee`, `get_manager_chain`).
+*   **FastAPI API**: Exposes RAG similarity search and grounded LLM completion at `/query`, and the ReAct reasoning agent loop (querying vector store and MCP server) at `/agent-query`.
+*   **Next.js Client**: A premium dark-mode web application featuring model provider selectors (OpenAI, Anthropic, Gemini, Local RAG, and Local ReAct Agent), chat history persistence via local storage, and real-time response streaming using the Vercel AI SDK.
 
 ---
 
@@ -49,14 +57,19 @@ The workspace is split into two unified components: a Python FastAPI RAG backend
 *   Includes a safe arithmetic `calculate` calculator tool that parses and evaluates mathematical expressions.
 *   Instrumented with custom **OpenTelemetry tracing** spans (`agent_query`, `agent_step_N`, `llm_call`, `tool_execution`) exported directly to the terminal stdout for debugging.
 
-### 4. Interactive Next.js Chat Client (`generic-ai-client`)
+### 4. Advanced ReAct RAG & MCP Agent (`step5.py`)
+*   An advanced agent implementing the ReAct reasoning loop that queries both the Chroma vector database (`search_policies` tool) and a local stdio-based Model Context Protocol (MCP) server (`get_employee`, `get_manager_chain` tools).
+*   Enforces hierarchical structure validation across the reporting tree.
+*   Hooked up directly to the FastAPI server lifespan handler using `AsyncExitStack` to ensure the child subprocess cleanly spawns and terminates.
+
+### 5. Interactive Next.js Chat Client (`generic-ai-client`)
 *   Features a responsive, high-fidelity sidebar for managing chat conversations and theme switching.
 *   Includes a credentials settings drawer to let users securely save API keys on the client-side.
-*   Automatically detects when a user selects "Local RAG" and routes requests through a custom proxy API, rendering document source reference badges alongside answer text.
+*   Automatically detects when a user selects "Local RAG" or "Local ReAct Agent (MCP)" and routes requests through custom proxy APIs, rendering document source reference badges and streaming reasoning responses.
 
-### 5. Spec-Driven Development (OpenSpec)
-*   The entire development lifecycle of this project (timeline milestones, functional requirements, technical design docs, and implementation checklists) was strictly managed using **OpenSpec**.
-*   The specification contracts resided inside `openspec/`, and all daily features were proposed, validated, and archived using spec-driven changes. This demonstrates a rigorous, model-verifiable engineering workflow.
+### 6. Spec-Driven Development (OpenSpec)
+*   The entire development lifecycle of this project was strictly managed using **OpenSpec**.
+*   All features were proposed, validated, and archived using spec-driven changes. This demonstrates a rigorous, model-verifiable engineering workflow.
 
 ---
 
@@ -106,13 +119,19 @@ Run the ReAct agent loop and view the OpenTelemetry span details in standard out
 uv run phase-1/step4.py
 ```
 
-### 4. Run the Evaluation Suite
+### 4. Run Advanced ReAct RAG & MCP Agent
+Run the multi-turn agent that queries both the Chroma vector store and the MCP server:
+```bash
+uv run phase-1/step5.py
+```
+
+### 5. Run the Evaluation Suite
 Validate RAG retrieval precision:
 ```bash
 uv run phase-1/evaluate_rag.py
 ```
 
-### 5. Start the Application
+### 6. Start the Application
 1.  **FastAPI Backend Server**:
     ```bash
     uv run uvicorn phase-1.app:app --host 127.0.0.1 --port 8000
@@ -122,7 +141,7 @@ uv run phase-1/evaluate_rag.py
     cd generic-ai-client
     npm run dev
     ```
-    Open `http://localhost:3000` in your web browser. Configure your API credentials in Settings, choose the **Local RAG (ag20)** model, and start chatting.
+    Open `http://localhost:3000` in your web browser. Configure your API credentials in Settings, choose the **Local RAG (ag20)** or **Local ReAct Agent (MCP)** model, and start chatting.
 
 ---
 
