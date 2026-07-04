@@ -9,10 +9,11 @@ Run from root with: uv run uvicorn phase-1.app:app --reload
 """
 
 import os
-from contextlib import asynccontextmanager
+import sys
+from contextlib import asynccontextmanager, AsyncExitStack
 from pathlib import Path
 from threading import Lock
-from typing import Annotated
+from typing import Annotated, Optional
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
@@ -21,8 +22,12 @@ from langchain_chroma import Chroma
 from langchain_community.document_loaders import DirectoryLoader, TextLoader
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from openai import OpenAI
+from openai import OpenAI, AsyncOpenAI
 from pydantic import BaseModel, Field
+from mcp import ClientSession, StdioServerParameters
+from mcp.client.stdio import stdio_client
+
+from .step5 import ask, build_openai_tools
 
 load_dotenv()
 
@@ -67,17 +72,39 @@ def build_or_load_vectorstore(api_key: str | None = None) -> Chroma:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("[startup] checking environment for default credentials...")
+    exit_stack = AsyncExitStack()
+    state["exit_stack"] = exit_stack
+    
     if os.environ.get("OPENAI_API_KEY"):
         try:
             print("[startup] initializing vector store...")
             state["store"] = build_or_load_vectorstore()
             state["client"] = OpenAI()
+            state["async_client"] = AsyncOpenAI()
+            
+            # Spawn MCP Org Chart Server subprocess
+            print("[startup] spawning MCP server subprocess...")
+            server_params = StdioServerParameters(
+                command=sys.executable,
+                args=["phase-1/org_chart_server.py"],
+                env=None
+            )
+            read_stream, write_stream = await exit_stack.enter_async_context(stdio_client(server_params))
+            mcp_session = await exit_stack.enter_async_context(ClientSession(read_stream, write_stream))
+            await mcp_session.initialize()
+            state["mcp_session"] = mcp_session
+            
+            # Retrieve tools and construct OpenAI tools schema
+            mcp_tools_resp = await mcp_session.list_tools()
+            state["openai_tools"] = build_openai_tools(mcp_tools_resp.tools)
             print("[startup] initialization successful")
         except Exception as e:
-            print(f"[startup] failed to initialize vector store: {e}. Will attempt on-demand initialization.")
+            print(f"[startup] failed to initialize: {e}. Will attempt on-demand initialization.")
     else:
         print("[startup] OPENAI_API_KEY not found in environment. Deferring initialization to query time.")
     yield
+    print("[shutdown] cleaning up resources...")
+    await exit_stack.aclose()
     state.clear()
 
 
@@ -178,6 +205,71 @@ def query(req: QueryRequest) -> QueryResponse:
         return QueryResponse(answer=response.choices[0].message.content, sources=sources)
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Query execution failed: {e}")
+
+
+async def ensure_initialized(api_key: str | None = None):
+    """Ensure vector store, clients, and MCP server are initialized."""
+    if "store" not in state or "mcp_session" not in state:
+        resolved_key = api_key or os.environ.get("OPENAI_API_KEY")
+        if not resolved_key:
+            raise HTTPException(
+                status_code=400,
+                detail="OpenAI API Key is missing. Set it in env or pass openai_api_key in request body."
+            )
+        
+        with lock:
+            if "store" not in state:
+                try:
+                    state["store"] = build_or_load_vectorstore(resolved_key)
+                except Exception as e:
+                    raise HTTPException(status_code=500, detail=f"Failed to build vector store: {e}")
+            if "client" not in state:
+                state["client"] = OpenAI(api_key=resolved_key)
+            if "async_client" not in state:
+                state["async_client"] = AsyncOpenAI(api_key=resolved_key)
+            if "mcp_session" not in state:
+                try:
+                    if "exit_stack" not in state:
+                        state["exit_stack"] = AsyncExitStack()
+                    exit_stack = state["exit_stack"]
+                    server_params = StdioServerParameters(
+                        command=sys.executable,
+                        args=["phase-1/org_chart_server.py"],
+                        env=None
+                    )
+                    read_stream, write_stream = await exit_stack.enter_async_context(stdio_client(server_params))
+                    mcp_session = await exit_stack.enter_async_context(ClientSession(read_stream, write_stream))
+                    await mcp_session.initialize()
+                    state["mcp_session"] = mcp_session
+                    mcp_tools_resp = await mcp_session.list_tools()
+                    state["openai_tools"] = build_openai_tools(mcp_tools_resp.tools)
+                except Exception as e:
+                    raise HTTPException(status_code=500, detail=f"Failed to initialize MCP: {e}")
+
+
+class AgentQueryRequest(BaseModel):
+    question: Annotated[str, Field(min_length=1, max_length=500)]
+    openai_api_key: str | None = None
+
+
+class AgentQueryResponse(BaseModel):
+    answer: str
+
+
+@app.post("/agent-query", response_model=AgentQueryResponse)
+async def agent_query(req: AgentQueryRequest) -> AgentQueryResponse:
+    await ensure_initialized(req.openai_api_key)
+    
+    store = state["store"]
+    client = state["async_client"]
+    mcp_session = state["mcp_session"]
+    openai_tools = state["openai_tools"]
+    
+    try:
+        ans = await ask(req.question, store, client, mcp_session, openai_tools)
+        return AgentQueryResponse(answer=ans)
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Agent reasoning loop failed: {e}")
 
 
 if __name__ == "__main__":

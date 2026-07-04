@@ -25,6 +25,84 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing or invalid messages array' }, { status: 400 });
     }
 
+    // Intercept Local ReAct Agent requests
+    if (modelId === 'local-react-agent') {
+      const userMessages = messages.filter((m: any) => m.role === 'user');
+      const lastMessage = userMessages[userMessages.length - 1];
+      let lastQuestion = '';
+      if (lastMessage) {
+        if (lastMessage.content) {
+          lastQuestion = lastMessage.content;
+        } else if (Array.isArray(lastMessage.parts)) {
+          lastQuestion = lastMessage.parts
+            .filter((part: any) => part.type === 'text')
+            .map((part: any) => part.text)
+            .join('');
+        }
+      }
+
+      const resolvedApiKey =
+        req.headers.get('x-openai-api-key') ||
+        apiKeys?.openai ||
+        body.openaiApiKey ||
+        process.env.OPENAI_API_KEY ||
+        '';
+
+      console.log(`[API/chat] Routing to Local ReAct Agent API with question: "${lastQuestion}"`);
+
+      const stream = createUIMessageStream({
+        execute: async ({ writer }) => {
+          const textId = 'react-content';
+          try {
+            const AGENT_API_URL = process.env.AGENT_API_URL || 'http://127.0.0.1:8000/agent-query';
+            const response = await fetch(AGENT_API_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ 
+                question: lastQuestion,
+                openai_api_key: resolvedApiKey 
+              }),
+            });
+            
+            if (!response.ok) {
+              const errorText = await response.text();
+              let friendlyError = `Error from ReAct Agent API: ${response.status} - ${errorText}`;
+              if (errorText.includes('Sync client is not available') || errorText.includes('OpenAI API Key is missing') || errorText.includes('credentials')) {
+                friendlyError = `⚠️ **OpenAI API Key is missing.**\n\nPlease open the **Settings** menu in the top-right corner of the UI, enter a valid **OpenAI API Key**, and try again. The local ReAct system requires this key to call OpenAI APIs.`;
+              } else if (errorText.includes('invalid_api_key') || errorText.includes('Incorrect API key') || errorText.includes('401')) {
+                friendlyError = `⚠️ **Invalid OpenAI API Key.**\n\nThe OpenAI API key provided in settings is incorrect or expired. Please update it in the **Settings** menu.`;
+              }
+              writer.write({ type: 'text-start', id: textId });
+              writer.write({ type: 'text-delta', id: textId, delta: friendlyError });
+              writer.write({ type: 'text-end', id: textId });
+              return;
+            }
+            
+            const data = await response.json();
+            const answer = data.answer || '';
+
+            // Stream the content chunk-by-chunk to simulate typing
+            writer.write({ type: 'text-start', id: textId });
+            const words = answer.split(/(\s+)/);
+            for (const word of words) {
+              if (word) {
+                writer.write({ type: 'text-delta', id: textId, delta: word });
+                await new Promise((resolve) => setTimeout(resolve, 8));
+              }
+            }
+            writer.write({ type: 'text-end', id: textId });
+          } catch (err: any) {
+            console.error('[API/chat] Local ReAct Agent execution error:', err);
+            writer.write({ type: 'text-start', id: textId });
+            writer.write({ type: 'text-delta', id: textId, delta: `Failed to execute ReAct Agent query: ${err.message}` });
+            writer.write({ type: 'text-end', id: textId });
+          }
+        }
+      });
+
+      return createUIMessageStreamResponse({ stream });
+    }
+
     // Intercept Local RAG requests
     if (modelId === 'local-rag') {
       const userMessages = messages.filter((m: any) => m.role === 'user');

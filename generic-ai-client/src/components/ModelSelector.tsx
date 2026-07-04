@@ -46,8 +46,8 @@ export default function ModelSelector() {
 
   // Check if a model has its key configured (either server-side or client-side)
   const isKeyConfigured = (model: Model) => {
-    if (model.id === 'local-rag') {
-      // Local RAG requires OpenAI key
+    if (model.id === 'local-rag' || model.id === 'local-react-agent') {
+      // Local RAG and ReAct Agent require OpenAI key
       return serverAvailability['gpt-4o-mini'] || !!apiKeys['openai'];
     }
     const isServerConfigured = serverAvailability[model.id] || false;
