@@ -194,7 +194,7 @@ async def main() -> None:
     # Spawner parameters for MCP server
     server_params = StdioServerParameters(
         command=sys.executable,
-        args=["phase-1/org_chart_server.py"],
+        args=["phase-1/mcp/org_chart_server.py"],
         env=None,
     )
 

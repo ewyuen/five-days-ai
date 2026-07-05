@@ -86,7 +86,7 @@ async def lifespan(app: FastAPI):
             print("[startup] spawning MCP server subprocess...")
             server_params = StdioServerParameters(
                 command=sys.executable,
-                args=["phase-1/org_chart_server.py"],
+                args=["phase-1/mcp/org_chart_server.py"],
                 env=None
             )
             read_stream, write_stream = await exit_stack.enter_async_context(stdio_client(server_params))
@@ -234,7 +234,7 @@ async def ensure_initialized(api_key: str | None = None):
                     exit_stack = state["exit_stack"]
                     server_params = StdioServerParameters(
                         command=sys.executable,
-                        args=["phase-1/org_chart_server.py"],
+                        args=["phase-1/mcp/org_chart_server.py"],
                         env=None
                     )
                     read_stream, write_stream = await exit_stack.enter_async_context(stdio_client(server_params))
